@@ -1,0 +1,100 @@
+# ============================================
+# pytest API harness - Modern AI Stack
+# LangChain + LangGraph + Pydantic AI + Instructor
+# ============================================
+
+# ===================
+# 🧠 AI/LLM Core Stack
+# ===================
+# Anthropic SDK - Direct Claude access
+anthropic==0.40.0
+
+# Instructor - Structured outputs with Pydantic (RECOMMENDED)
+instructor==1.7.2
+
+# LangChain Core
+langchain==0.3.13
+langchain-core==0.3.28
+langchain-anthropic==0.3.0
+langchain-openai==0.2.14
+langchain-community==0.3.13
+
+# LangGraph - Workflow orchestration
+langgraph==0.2.60
+
+# LangChain + Qdrant for RAG
+langchain-qdrant==0.2.0
+
+# ===================
+# 📊 Data & Validation
+# ===================
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# ===================
+# 🗄️ Vector Database (RAG Memory)
+# ===================
+qdrant-client==1.12.1
+
+# Embeddings
+sentence-transformers==3.3.1
+
+# ===================
+# 🧪 Testing
+# ===================
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-xdist==3.5.0
+pytest-html==4.1.1
+pytest-rerunfailures==15.0       # 5% flake budget — retry critical tests up to 2x
+pytest-timeout==2.3.1             # hard cap per-test (suite_defaults.timeout_min)
+pytest-cov==6.0.0                 # coverage metric for QA sign-off dashboard
+hypothesis==6.152.1               # property-based fuzzing (Wave-4)
+allure-pytest==2.13.5
+assertpy==1.1                     # fluent assertions
+httpx==0.28.1
+
+# ===================
+# 🗃️ Infrastructure Clients
+# ===================
+# Database
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+asyncpg==0.30.0
+kazoo==2.10.0  # ZooKeeper client, if your config lives in ZooKeeper
+
+# Redis
+redis==5.2.1
+
+# Kafka
+confluent-kafka==2.6.1
+
+# gRPC (framework redesign — Task 1)
+grpcio>=1.60.0
+grpcio-tools>=1.60.0
+protobuf>=4.25.0
+
+# AWS (LocalStack)
+boto3==1.35.81
+
+# ===================
+# 📋 OpenAPI & Schema
+# ===================
+prance==23.6.21.0
+openapi-spec-validator==0.7.1
+PyYAML==6.0.2
+jsonschema==4.23.0
+deepdiff==8.1.1
+
+# ===================
+# 🛠️ Utilities
+# ===================
+structlog==24.4.0
+python-dotenv==1.0.1
+tenacity==9.0.0
+Faker==33.1.0
+rich==13.9.4  # Beautiful terminal output
+typer==0.15.1  # CLI framework
+fakeredis>=2.20.0
+moto[sqs]>=5.0.0
+ruff==0.13.2  # pinned: an unpinned linter turns a new ruff release into a red CI
