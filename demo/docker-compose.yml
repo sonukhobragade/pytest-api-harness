@@ -1,0 +1,43 @@
+# The whole target stack: a service, its database, and its cache.
+#
+#   docker compose -f demo/docker-compose.yml up -d
+#   pytest tests/demo
+#
+# Nothing here talks to the internet, so the suite runs offline and load tests
+# have a target that nobody else is paying for.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo
+    ports: ["5432:5432"]
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U demo -d demo"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    environment:
+      DEMO_DB_DSN: postgresql://demo:demo@postgres:5432/demo
+      DEMO_REDIS_URL: redis://redis:6379/0
+      DEMO_CACHE_TTL: "60"
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis:    {condition: service_healthy}
