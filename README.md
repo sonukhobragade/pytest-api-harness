@@ -8,6 +8,24 @@ providers, and token refresh handling.
 
 It is the scaffolding, not the tests. You bring the endpoints.
 
+## The argument, run as an experiment
+
+Delete the one line in `demo/app.py` that evicts a cached order after its
+status changes, then rerun the suite:
+
+```
+tests/demo/test_design_techniques.py    44 passed
+tests/demo/test_oracles.py               1 failed
+```
+
+44 tests that read only the API pass while the service serves a stale
+`created` to every reader and the database says `paid`. The API is perfectly
+consistent with itself, so nothing at the response layer can see it. The cache
+oracle fails in the first second and names the key.
+
+That is why a response assertion is not an oracle. [Full write-up
+below](#what-the-demo-proves).
+
 ## What it gives you
 
 **`api_core/core/api_test_base.py`** — the base class every test inherits.
