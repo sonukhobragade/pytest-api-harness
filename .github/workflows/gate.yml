@@ -2,6 +2,11 @@ name: gate
 
 # The same checks tools/local_gate.sh runs locally. CI runs the gate script
 # itself rather than repeating its steps here, so the two cannot drift apart.
+#
+# The gate job alone is not enough. It runs without the demo stack, so the whole
+# tests/demo directory skips itself and the job goes green having executed 19 of
+# 69 tests. The two jobs below exist because a green gate was not evidence that
+# anything in the demo suite worked.
 
 on:
   push:
@@ -14,6 +19,7 @@ permissions:
 
 jobs:
   gate:
+    name: gate
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -32,3 +38,83 @@ jobs:
 
       - name: Run the gate
         run: bash tools/local_gate.sh
+
+  # The suite the badge used to skip. Brings the stack up and fails on any skip,
+  # because a skipped test and a passing test are the same colour.
+  demo:
+    name: demo suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run the demo suite against a live stack
+        run: bash tools/demo_suite.sh
+
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose -f demo/docker-compose.yml logs --tail 200
+
+  # Breaks the service on purpose and checks the oracle notices. This is the
+  # repository's own argument, run as a test rather than asserted in a README.
+  mutation:
+    name: oracle catches the bug
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: demo
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Remove cache eviction, expect exactly the oracle to fail
+        run: bash tools/mutation_check.sh
+
+  # The exact pin on pydantic meant no wheel existed for any Python newer than
+  # the one pinned above, so `pip install -r requirements.txt` built
+  # pydantic-core from source and failed at the first command in the README.
+  # CI never saw it. This job is what would have.
+  install:
+    name: install on ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install from requirements, wheels only
+        run: |
+          python -m pip install --upgrade pip
+          pip install --only-binary=:all: -r requirements.txt
+
+      - name: Import what the harness imports
+        run: python -c "import pydantic, httpx, requests, sqlalchemy, psycopg2, redis, allure_commons; print('ok')"
