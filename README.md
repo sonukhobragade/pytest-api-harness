@@ -2,6 +2,10 @@
 
 ![gate](../../actions/workflows/gate.yml/badge.svg)
 
+CI runs the demo stack and fails on a skipped test, then removes the cache
+eviction from the service and fails unless the oracle catches it. The badge is
+about the oracle, not only about lint.
+
 The reusable half of a production API test suite: base classes, typed request
 and response models, a declarative step executor, response validators, CSV data
 providers, and token refresh handling.
@@ -172,6 +176,27 @@ The cache oracle fails in the first second and names the key.
 
 That is the entire argument for a second and third source, run as an experiment
 rather than claimed in a README.
+
+### The experiment runs in CI
+
+`tools/mutation_check.sh` performs that deletion on every push. It removes the
+eviction call, rebuilds the service, and requires two things: the API-only file
+still passes, and the oracle file fails. If the oracle passes with the bug in
+place, it has stopped testing anything and the build goes red.
+
+```bash
+bash tools/mutation_check.sh
+```
+
+The mutation is reverted on exit, including on failure.
+
+This exists because the badge above used to be worth very little. Every run
+between the first release and this change reported `19 passed, 50 skipped`. The
+demo directory skips itself when its stack is not up, which is correct on a
+laptop and wrong on a runner, where docker is available and nothing was
+forgotten. Fifty tests, the cache oracle among them, had never executed, and a
+badge cannot show the difference between nothing skipped and everything skipped.
+`tools/demo_suite.sh` now brings the stack up and treats any skip as a failure.
 
 ## Test design, named
 

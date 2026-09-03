@@ -14,7 +14,7 @@ import pytest
 import requests
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
-DB_DSN = os.getenv("DEMO_DB_DSN", "postgresql://oracle:oracle@localhost:5432/demo")
+DB_DSN = os.getenv("DEMO_DB_DSN", "postgresql://demo:demo@localhost:5432/demo")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 

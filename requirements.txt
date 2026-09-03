@@ -5,22 +5,28 @@
 # here imports. It made `pip install -r requirements.txt` a multi-hundred-megabyte
 # download (sentence-transformers alone pulls in torch) before a reader could run
 # a single test. Anything reinstated below should be something a file imports.
+#
+# Libraries with compiled extensions are given a compatible range rather than an
+# exact pin. An exact pin on pydantic meant that anyone on a Python newer than
+# the one CI happens to use had no wheel available, fell back to building
+# pydantic-core from source, and failed at the first command in the README. The
+# linter stays pinned for the opposite reason, noted below.
 
 # --- test runner -------------------------------------------------------------
-pytest==8.3.4
-allure-pytest==2.13.5             # api_core.utils.* decorate steps with @allure.step
+pytest>=8.3,<9
+allure-pytest>=2.13,<3            # api_core.utils.* decorate steps with @allure.step
 
 # --- models and validation ---------------------------------------------------
-pydantic==2.10.3                  # api_core/models/*
+pydantic>=2.10,<3                 # api_core/models/*
 
 # --- HTTP clients ------------------------------------------------------------
-httpx==0.28.1                     # api_core core + validators
-requests==2.32.3                  # tests/demo fixtures
+httpx>=0.28,<0.29                 # api_core core + validators
+requests>=2.32,<3                 # tests/demo fixtures
 
 # --- oracles -----------------------------------------------------------------
-sqlalchemy==2.0.36                # api_core/utils/db_utils.py
-psycopg2-binary==2.9.10           # database oracle driver
-redis==5.2.1                      # api_core/utils/redis_utils.py
+sqlalchemy>=2.0.36,<3             # api_core/utils/db_utils.py
+psycopg2-binary>=2.9.10,<3        # database oracle driver
+redis>=5.2,<7                     # api_core/utils/redis_utils.py
 
 # --- lint --------------------------------------------------------------------
 ruff==0.13.2                      # pinned: an unpinned linter turns a new ruff

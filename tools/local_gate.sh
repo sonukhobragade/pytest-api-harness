@@ -57,13 +57,17 @@ step() {
 
 # --- steps -----------------------------------------------------------------
 # Keep STEPS in sync with the step calls below (used for the N/M counter).
-STEPS=(lint typecheck unit collect)
+STEPS=(lint typecheck tests collect)
 
 step "Lint"                                 'python -m ruff check .'
 step "Type check"                           'true'
-# Every test here is marked integration and needs a live API, so deselecting
-# them leaves nothing to run and pytest exits 5. Any other non-zero fails.
-step "Unit tests (no external dependencies)" 'pytest -m '\''not integration'\''; rc=$?; [ $rc -eq 0 ] || { [ $rc -eq 5 ] && echo "(all tests are integration-marked)"; }'
+# This step used to run `pytest -m 'not integration'`, with a comment claiming
+# every test here carried that marker and the deselect therefore left nothing to
+# run. No test in the repository has ever carried it: the marker is declared in
+# pytest.ini and used zero times, so the deselect matched nothing and the step
+# ran the whole suite while reporting that it had run none of it. Run the suite
+# plainly instead. The demo directory skips itself when its stack is not up.
+step "Tests" 'pytest'
 # pytest exits 5 when it collects nothing, which is the normal state for the
 # repos that ship no unit tests. Treat "no tests" as a pass; treat a real collection
 # error as a failure.
